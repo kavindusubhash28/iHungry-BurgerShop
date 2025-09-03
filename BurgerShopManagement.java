@@ -16,7 +16,8 @@ public class BurgerShopManagement {
     static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
-        while (true) {
+        boolean running = true;
+        while (running) {
             System.out.println("\n-------------------------------");
             System.out.println("          iHungry Burger        ");
             System.out.println("-------------------------------");
@@ -43,12 +44,16 @@ public class BurgerShopManagement {
                     searchCustomer();
                     break;
                 case 5:
-                    System.out.println("View Orders - Feature coming soon...");
+                    // Show the view orders screen
+                    viewOrders();
                     break;
                 case 6:
-                    System.out.println("Update Order Details - Feature coming soon...");
+                    // Show the update order details screen
+                    updateOrders();
                     break;
                 case 7:
+                    // allow loop to terminate cleanly
+                    running = false;
                     exit();
                     break;
                 default:
@@ -226,6 +231,110 @@ public class BurgerShopManagement {
 
         if (!found) {
             System.out.println("Customer not found!");
+        }
+    }
+
+    public static void viewOrders() {
+        if (orderCount == 0) {
+            System.out.println("No orders available.");
+            return;
+        }
+
+        while (true) {
+            System.out.println("\n-------------------------------");
+            System.out.println("          VIEW ORDER LIST        ");
+            System.out.println("-------------------------------");
+            System.out.println("[1] Delivered Order");
+            System.out.println("[2] Preparing Order");
+            System.out.println("[3] Cancel Order");
+            System.out.print("Enter an option to continue > ");
+            int opt = input.nextInt();
+            input.nextLine();
+
+            int status;
+            if (opt == 1) status = DELIVERED;
+            else if (opt == 2) status = PREPARING;
+            else if (opt == 3) status = CANCEL;
+            else {
+                System.out.println("Invalid option!");
+                return;
+            }
+
+            // Table Header
+            System.out.println("\n--------------------------------------------------");
+            System.out.printf("%-10s %-12s %-12s %-8s %-10s\n", "OrderID", "CustomerID", "Name", "Qty", "OrderValue");
+            System.out.println("--------------------------------------------------");
+
+            boolean found = false;
+            for (int i = 0; i < orderCount; i++) {
+                if (orderStatus[i] == status) {
+                    double orderValue = burgerQty[i] * BURGERPRICE;
+                    System.out.printf("%-10s %-12s %-12s %-8d %-10.2f\n", orderIDs[i], customerIDs[i], customerNames[i], burgerQty[i], orderValue);
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                System.out.println("No orders found for this status.");
+            }
+
+            System.out.println("--------------------------------------------------");
+
+            // Ask to stay or go back
+            System.out.print("Do you want to stay here? (Y/N): ");
+            String choice = input.nextLine().toUpperCase();
+            if (!choice.equals("Y")) {
+                break;
+            }
+        }
+    }
+
+
+    public static void updateOrders() {
+        if (orderCount == 0) { System.out.println("No orders available."); return; }
+
+        System.out.print("Enter Order ID to update: ");
+        String id = input.nextLine();
+        int index = -1;
+        for (int i = 0; i < orderCount; i++) {
+            if (orderIDs[i].equals(id)) { index = i; break; }
+        }
+
+        if (index == -1) {
+            System.out.println("Invalid Order ID!");
+            return;
+        }
+
+        if (orderStatus[index] != PREPARING) {
+            System.out.println("Cannot update. Order already " + statusText(orderStatus[index]));
+            return;
+        }
+
+        System.out.println("1. Update Quantity");
+        System.out.println("2. Update Status");
+        System.out.print("Choose: ");
+        int opt = input.nextInt();
+        input.nextLine();
+
+        if (opt == 1) {
+            System.out.print("Enter new quantity: ");
+            int newQty = input.nextInt();
+            input.nextLine();
+            if (newQty > 0) {
+                burgerQty[index] = newQty;
+                System.out.println("Quantity updated successfully!");
+            } else System.out.println("Invalid quantity!");
+        } else if (opt == 2) {
+            System.out.println("0. Preparing");
+            System.out.println("1. Delivered");
+            System.out.println("2. Cancelled");
+            System.out.print("Choose status: ");
+            int newStatus = input.nextInt();
+            input.nextLine();
+            if (newStatus >= 0 && newStatus <= 2) {
+                orderStatus[index] = newStatus;
+                System.out.println("Status updated successfully!");
+            } else System.out.println("Invalid status!");
         }
     }
 
